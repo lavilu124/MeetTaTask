@@ -3,8 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Home - MeetTaTask</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homeDesign.css') }}">
 </head>
 <body>
-    <h1>Hello, World!</h1>
+    <h1>Welcome! Choose a person to chat with</h1>
+    <div class="container">
+        <div class="chat-list">
+            <form action="/home" method="post">
+                <input type="hidden" name="action" value="chat">
+                <input type="hidden" name="user" value="chatbot">
+                <button type="submit" class="chat-user">chatbot</button>
+            </form>
+            {% for user in users %}
+            <form action="/home" method="post">
+                <input type="hidden" name="action" value="chat">
+                <input type="hidden" name="user" value="{{ user['name'] }}">
+                <button type="submit" class="chat-user">{{ user['name'] }}</button>
+            </form>
+            {% endfor %}
+        </div>
+        <form action="/home" method="post">
+            <input type="hidden" name="action" value="logout">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
 </body>
 </html>

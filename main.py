@@ -29,6 +29,17 @@ cred = credentials.Certificate("resources/firebase_key.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+# ---------------- useful functions ---------------- #
+# Function to get all users except the current user
+def get_users():
+    users_ref = db.collection('users')
+    docs = users_ref.stream()
+    users = []
+    for doc in docs:
+        if doc.id != session.get('user'):  # Exclude current user
+            users.append(doc.to_dict())
+    return users
+
 # ---------------- ROUTES ---------------- #
 #main route that sends the user to home
 @app.route('/')
@@ -83,14 +94,31 @@ def register():
 
 
 #home route
-@app.route('/home')
+@app.route('/home', methods=["POST", "GET"])
 def home():
+    
+    session["users"] = get_users()
+    
     #check if the user is logged in
     if 'user' not in session:
         return redirect(url_for('register'))
     
-    return render_template("home.html")
+    #handle logout
+    if request.method == "POST":
+        if request.form.get("action") == "logout":
+            session.pop('user', None)
+            session.pop('email', None)
+            return redirect(url_for('register'))
+        elif request.form.get("action") == "chat":
+            user_id = request.form.get("user")
+            return redirect(url_for('chat', user_id=user_id))
+    
+    return render_template("home.html" , users=session["users"])
 
+
+@app.route('/chat/<user_id>')
+def chat(user_id):
+    return f"Chat with user {user_id}"
 
 # checking if this file is the main file
 if(__name__ == "__main__"):
