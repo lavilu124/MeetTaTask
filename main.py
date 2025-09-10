@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import firebase_admin
 from firebase_admin import credentials, firestore
 import pyrebase
+import requests
 
 #app creation
 app = Flask(__name__)
@@ -37,13 +38,28 @@ db = firestore.client()
 # ---------------- useful functions ---------------- #
 # Function to get all users except the current user
 def get_users():
-    users_ref = db.collection('users')
-    docs = users_ref.stream()
-    users = []
-    for doc in docs:
-        if doc.id != session.get('user'):  # Exclude current user
-            users.append(doc.to_dict())
-    return users
+    try:
+        print("Fetching users from Firestore...")  # Debug start
+        users_ref = db.collection('users')
+        docs = users_ref.stream()
+
+        users = []
+        current_user = session.get('user')
+        print("Current user:", current_user)
+
+        for doc in docs:
+            data = doc.to_dict()
+            print("Fetched user:", data)
+            if doc.id != current_user:
+                users.append(data)
+
+        print("Final users list:", users)
+        return users
+
+    except Exception as e:
+        print("Error in get_users:", e)
+        return []
+
 
 # ---------------- ROUTES ---------------- #
 #main route that sends the user to home
@@ -102,11 +118,11 @@ def register():
 @app.route('/home', methods=["POST", "GET"])
 def home():
     
-    session["users"] = get_users()
-    
     #check if the user is logged in
     if 'user' not in session:
         return redirect(url_for('register'))
+    
+    session["users"] = get_users()
     
     #handle logout
     if request.method == "POST":
@@ -129,7 +145,7 @@ def chat(user_id):
 
 @app.route('/nasa', methods=["GET", "POST"])
 def nasa():
-    if method == "POST":
+    if request.method == "POST":
         return redirect(url_for('home'))
     
     # Fetch NASA APOD data
