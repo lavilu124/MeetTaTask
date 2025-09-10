@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center;">
+    <h1>{{ title }}</h1>
+    <img src="{{ image_url }}" alt="NASA Image" style="max-width: 80%; border-radius: 10px;">
+    <p style="max-width: 70%; margin: auto; padding-top: 10px;">{{ explanation }}</p>
+
+    <form action="/home" method="post" style="margin-top: 20px;">
+        <button type="submit" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Back to Home</button>
+    </form>
+</body>
+</html>

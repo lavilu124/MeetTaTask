@@ -20,6 +20,11 @@ firebase_config = {
     "appId": "1:229351048156:web:31592247707302fa700519"
 }
 
+
+# NASA API Config
+NASA_API_KEY = "WhNJKMuqmZONvYHvdbeLeFTJ8H92mrgEbWnYOM3n"
+NASA_APOD_URL = "https://api.nasa.gov/planetary/apod"
+
 # Initialize Pyrebase (for auth)
 pb = pyrebase.initialize_app(firebase_config)
 pb_auth = pb.auth()
@@ -110,6 +115,8 @@ def home():
             session.pop('email', None)
             return redirect(url_for('register'))
         elif request.form.get("action") == "chat":
+            if request.form.get("user") == "random nasa image":
+                return redirect(url_for('nasa'))
             user_id = request.form.get("user")
             return redirect(url_for('chat', user_id=user_id))
     
@@ -119,6 +126,22 @@ def home():
 @app.route('/chat/<user_id>')
 def chat(user_id):
     return f"Chat with user {user_id}"
+
+@app.route('/nasa', methods=["GET", "POST"])
+def nasa():
+    if method == "POST":
+        return redirect(url_for('home'))
+    
+    # Fetch NASA APOD data
+    response = requests.get(NASA_APOD_URL, params={"api_key": NASA_API_KEY})
+    data = response.json()
+
+    # Extract image URL and title
+    image_url = data.get("url", "")
+    title = data.get("title", "NASA Image")
+    explanation = data.get("explanation", "")
+    
+    return render_template("nasa.html", image_url=image_url, title=title, explanation=explanation)
 
 # checking if this file is the main file
 if(__name__ == "__main__"):

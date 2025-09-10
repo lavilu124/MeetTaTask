@@ -1,7 +1,7 @@
 # MeetTaTask
 
 ## 📖 About 
-this is a simpel chat website with a simple chatbot feature.
+this is a simpel chat website.
 ---
 
 ## 🚀 Installation & Setup
