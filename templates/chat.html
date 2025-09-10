@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        body { font-family: Arial; background: #f3f3f3; margin: 0; padding: 0; }
+        .chat-container {
+            width: 400px;
+            margin: 20px auto;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message { margin-bottom: 8px; }
+        .sender { font-weight: bold; color: #444; }
+        .input-box { display: flex; gap: 8px; }
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 8px 12px;
+            background: #bb3456ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #c82951ff; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Chat with {{ friend_name }}</h2>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="input-box">
+            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatId = "{{ chat_id }}";
+        const messagesDiv = document.getElementById("messages");
+        const messageInput = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        // Send message via AJAX
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            await fetch(`/send_message/${chatId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+
+            messageInput.value = "";
+            loadMessages();
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        // Load messages from Flask every 2 seconds
+        async function loadMessages() {
+            const res = await fetch(`/get_messages/${chatId}`);
+            const messages = await res.json();
+
+            messagesDiv.innerHTML = messages.map(msg => `
+                <div class="message">
+                    <span class="sender">${msg.sender}:</span> ${msg.message}
+                </div>
+            `).join("");
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        setInterval(loadMessages, 2000);
+        loadMessages();
+    </script>
+</body>
+</html>
